@@ -1,0 +1,9 @@
+torch>=2.0
+transformers>=4.30
+datasets
+accelerate
+peft
+numpy
+scikit-learn
+matplotlib
+tensorboard
