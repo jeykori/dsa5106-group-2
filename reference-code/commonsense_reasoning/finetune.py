@@ -142,7 +142,7 @@ def train(
     if load_8bit:
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
-            load_in_8bit=load_8bit,
+            # load_in_8bit=load_8bit,
             torch_dtype=torch.float16,
             device_map=device_map,
             trust_remote_code=True,
@@ -150,13 +150,13 @@ def train(
     else:
         model = AutoModelForCausalLM.from_pretrained(
             base_model,
-            load_in_8bit=False,
+            # load_in_8bit=False,
             torch_dtype=torch.float16,
             device_map={"": int(os.environ.get("LOCAL_RANK") or 0)},
             trust_remote_code=True,
         )
 
-    
+
     if model.config.model_type == "llama":
         # Due to the name of transformers' LlamaTokenizer, we have to do this
         # need to handle llama 3 separately
@@ -303,7 +303,7 @@ def train(
         # keeps Trainer from trying its own DataParallelism when more than 1 gpu is available
         model.is_parallelizable = True
         model.model_parallel = True
-    
+
     trainer = transformers.Trainer(
         model=model,
         train_dataset=train_data,
@@ -318,7 +318,7 @@ def train(
             fp16=True,
             logging_steps=10,
             optim="adamw_torch",
-            evaluation_strategy="steps" if val_set_size > 0 else "no",
+            eval_strategy="steps" if val_set_size > 0 else "no",
             save_strategy="steps",
             eval_steps=eval_step if val_set_size > 0 else None,
             save_steps=save_step,
@@ -326,8 +326,8 @@ def train(
             save_total_limit=3,
             load_best_model_at_end=True if val_set_size > 0 else False,
             ddp_find_unused_parameters=False if ddp else None,
-            group_by_length=group_by_length,
-            report_to="wandb" if use_wandb else None,
+            train_sampling_strategy="group_by_length" if group_by_length else None,
+            report_to="wandb" if use_wandb else "none",
             run_name=wandb_run_name if use_wandb else None,
         ),
         data_collator=transformers.DataCollatorForSeq2Seq(
@@ -354,28 +354,28 @@ def train(
         "\n If there's a warning about missing keys above, please disregard :)"
     )
 
-    
+
 
 
 def generate_prompt(data_point):
     # sorry about the formatting disaster gotta move fast
     if data_point["input"]:
-        return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request. 
+        return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
 
                 ### Instruction:
                 {data_point["instruction"]}
-                
+
                 ### Input:
                 {data_point["input"]}
-                
+
                 ### Response:
                 {data_point["output"]}""" # noqa: E501
     else:
-        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.  
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
                 ### Instruction:
                 {data_point["instruction"]}
-                
+
                 ### Response:
                 {data_point["output"]}""" # noqa: E501
 
