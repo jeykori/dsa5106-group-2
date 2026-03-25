@@ -80,6 +80,8 @@ def train(
         wandb_watch: str = "",  # options: false | gradients | all
         wandb_log_model: str = "",  # options: false | true
         resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
+        # misc
+        sample_size: int = None,
 ):
     print(
         f"Finetuning model with params:\n"
@@ -284,6 +286,9 @@ def train(
             print(f"Checkpoint {checkpoint_name} not found")
 
     model.print_trainable_parameters()  # Be more transparent about the % of trainable params.
+
+    if sample_size is not None:
+        data["train"] = data["train"].shuffle(seed=42).select(range(sample_size))
 
     if val_set_size > 0:
         train_val = data["train"].train_test_split(
