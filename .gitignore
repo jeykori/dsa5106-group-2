@@ -208,3 +208,5 @@ __marimo__/
 
 reference-code/commonsense_reasoning/dataset
 reference-code/commonsense_reasoning/commonsense_170k.json
+reference-code/commonsense_reasoning/experiment
+reference-code/commonsense_reasoning/finetuned_result
