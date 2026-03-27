@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# ProjectID should be `personal-<NUS ID (starting with e)>`
-#PBS -P personal-e1543077
+#PBS -P personal
 #PBS -N DoRA_LLaMA_3.2_3B
 #PBS -q normal
 #PBS -l select=1:ngpus=1
