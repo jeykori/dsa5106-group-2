@@ -27,16 +27,11 @@
 
    ```bash
    module purge
-   module load PrgEnv-gnu/8.3.3 cuda/12.2.2 miniforge3
+   module load PrgEnv-gnu/8.3.3
 
    cd ~/scratch/dsa5106-project/ref/commonsense_reasoning
 
-   eval "$(conda shell.bash hook)"
-
-   conda create -n dsa5106-project_ref_commonsense_reasoning python=3.10 -y
-   conda activate dsa5106-project_ref_commonsense_reasoning
-
-   pip install -r requirements.txt
+   uv sync
    ```
 
 4. Submit job to queue
