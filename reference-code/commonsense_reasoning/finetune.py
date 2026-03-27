@@ -82,6 +82,7 @@ def train(
         resume_from_checkpoint: str = None,  # either training checkpoint or final adapter
         # misc
         sample_size: int = None,
+        matmul_precision: str = None
 ):
     print(
         f"Finetuning model with params:\n"
@@ -116,10 +117,15 @@ def train(
         f"wandb_watch: {wandb_watch}\n"
         f"wandb_log_model: {wandb_log_model}\n"
         f"resume_from_checkpoint: {resume_from_checkpoint}\n"
+        f"matmul_precision: {matmul_precision}\n"
     )
     assert (
         base_model
     ), "Please specify a --base_model, e.g. --base_model='decapoda-research/llama-7b-hf'"
+
+    if matmul_precision is not None:
+        torch.set_float32_matmul_precision(matmul_precision)
+
     gradient_accumulation_steps = batch_size // micro_batch_size
 
     device_map = "auto"

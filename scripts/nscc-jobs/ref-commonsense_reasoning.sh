@@ -35,4 +35,5 @@ CUDA_VISIBLE_DEVICES=0 python finetune.py \
     --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]' \
     --lora_r "$LORA_R" --lora_alpha "$LORA_ALPHA" \
     --use_gradient_checkpointing \
+    --matmul_precision "high" \
     --output_dir "$OUT_DIR"
