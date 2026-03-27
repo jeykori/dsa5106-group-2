@@ -4,15 +4,13 @@
 
 ### Commonsense Reasoning
 
-1. Update Project ID and Job Names in `scripts/nscc-jobs`
-
-2. Run init script
+1. Run init script
 
    ```bash
    ./scripts/init-ref-commonsense_reasoning.sh
    ```
 
-3. rsync into NSCC (assuming `nscc` is your ssh config)
+2. rsync into NSCC (assuming `nscc` is your ssh config)
 
    ```bash
    ssh nscc "mkdir -p ~/scratch/dsa5106-project/ref/commonsense_reasoning"
@@ -24,7 +22,7 @@
       ./scripts/nscc-jobs/ nscc:~/scratch/dsa5106-project/jobs
    ```
 
-4. Set up env and install dependencies in nscc
+3. Set up env and install dependencies in nscc
    NOTE: SSH in first
 
    ```bash
@@ -41,7 +39,7 @@
    pip install -r requirements.txt
    ```
 
-5. Submit job to queue
+4. Submit job to queue
    ```bash
    qsub ~/scratch/dsa5106-project/jobs/ref-commonsense_reasoning.sh
    ```
