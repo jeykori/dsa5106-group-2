@@ -28,7 +28,7 @@ LORA_ALPHA=32
 CUDA_VISIBLE_DEVICES=0 python finetune.py \
     --base_model "$MODEL" \
     --data_path 'commonsense_170k.json' \
-    --batch_size 16  --micro_batch_size 24 --num_epochs 3 \
+    --batch_size 16  --micro_batch_size 16 --num_epochs 3 \
     --learning_rate 2e-4 --cutoff_len 256 --val_set_size 120 \
     --eval_step 80 --save_step 80  --adapter_name dora \
     --target_modules '["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"]' \
