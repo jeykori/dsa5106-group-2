@@ -8,16 +8,14 @@
 #PBS -j oe
 #PBS -o out-run.txt
 
-# Downloads the model to scratch rather than home
+# Set caches to scratch dir
 export HF_HOME=~/scratch/.cache/huggingface
+export UV_CACHE_DIR=~/scratch/.cache/uv
 
 module purge
-module load PrgEnv-gnu/8.3.3 cuda/12.2.2 miniforge3
+module load PrgEnv-gnu/8.3.3
 
 cd ~/scratch/dsa5106-project/ref/commonsense_reasoning
-
-eval "$(conda shell.bash hook)"
-conda activate dsa5106-project_ref_commonsense_reasoning
 
 # Modal from huggingface
 MODEL="unsloth/llama-3.2-3B"
@@ -25,7 +23,7 @@ OUT_DIR="./finetuned_result/dora_r16"
 LORA_R=16
 LORA_ALPHA=32
 
-CUDA_VISIBLE_DEVICES=0 python finetune.py \
+CUDA_VISIBLE_DEVICES=0 uv run python finetune.py \
     --base_model "$MODEL" \
     --data_path 'commonsense_170k.json' \
     --batch_size 16  --micro_batch_size 16 --num_epochs 3 \

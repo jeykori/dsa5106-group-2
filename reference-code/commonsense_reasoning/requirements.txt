@@ -1,4 +1,4 @@
---extra-index-url https://download.pytorch.org/whl/cu121
+--extra-index-url https://download.pytorch.org/whl/cu124
 
 accelerate>=1.13.0
 appdirs==1.4.4
@@ -11,6 +11,4 @@ gradio==4.9.0
 protobuf>=7.34.1
 scipy>=1.15.3
 sentencepiece>=0.2.1
-torch==2.5.1
-torchvision==0.20.1
-torchaudio==2.5.1
+torch

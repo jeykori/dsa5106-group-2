@@ -22,3 +22,34 @@ NUS students get [100,000 SU](https://nsccsg.github.io/policies/resource-allocat
    ssh nscc
    ```
 4. You can also view the [Web Portal](https://nusjobportal.nscc.sg)
+
+# Set up `uv` on NSCC
+
+1. ssh into NSCC
+2. run install script
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+3. set UV cache dir
+   ```bash
+   mkdir -p ~/scratch/.cache/uv
+   echo "export UV_CACHE_DIR=~/scratch/.cache/uv" >> ~/.bashrc
+   ```
+
+# Useful commands
+
+## Temporary interactive session
+
+```bash
+qsub -I -q normal -l select=1:ngpus=1 -l walltime=00:10:00 -P personal
+```
+
+## Check GPU usage
+
+```bash
+qstat # get job id (e.g. `13405122.pbs101`)
+qstat -n 13405122 # get last output e.g. x1000c0s7b0n0/2*16
+export PBS_JOBID=13405122.pbs101
+ssh x1000c1s3b0n0 # ssh into the node
+watch -n 1 nvidia-smi
+```
