@@ -45,7 +45,7 @@ def main(
 
     eval_result = []
     for i, batch in enumerate(data_batches):
-        batch_result = eval_batch(batch, tokenizer, model, num_beams)
+        batch_result = eval_batch(batch, tokenizer, model, num_beams, dataset)
         eval_result.extend(batch_result)
         print_result(f"Batch {i + 1}", batch_result)
 
@@ -55,7 +55,7 @@ def main(
 
     print_result("Overall score", eval_result)
 
-def eval_batch(batch, tokenizer, model, num_beams: int):
+def eval_batch(batch, tokenizer, model, num_beams: int, dataset: str):
     prompts = [generate_prompt({**item, "output": ""}) for item in batch]
 
     inputs = tokenizer(prompts, return_tensors="pt", padding=True).to(model.device)
