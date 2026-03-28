@@ -1,0 +1,127 @@
+from peft import LoraConfig, config, get_peft_model
+import transformers
+from datasets import load_dataset
+
+lora_r = 16
+lora_alpha = 32
+batch_size = 16
+micro_batch_size = 12
+num_epochs = 3
+learning_rate = 2e-4
+output_dir = "./lora-finetuned"
+eval_steps = 80
+save_steps = 80
+model_name = "unsloth/llama-3.2-3b"
+dataset_path = "./datasets/commonsense_170k.json"
+sample_size = 10000
+val_set_size = 120
+resume_from_checkpoint = None
+
+gradient_accumulation_steps = batch_size // micro_batch_size
+
+# --------------------------------------------------------------------------
+# LoRA
+# --------------------------------------------------------------------------
+model = transformers.AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
+
+config = LoraConfig(
+    r=lora_r,
+    lora_alpha=lora_alpha,
+    target_modules=["q_proj", "v_proj"],
+    task_type="CAUSAL_LM"
+)
+
+model = get_peft_model(model, config)
+
+
+# --------------------------------------------------------------------------
+# Tokenizer
+# --------------------------------------------------------------------------
+
+tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+# https://github.com/huggingface/transformers/issues/34842#issuecomment-2527910988
+tokenizer.padding_side = "right"
+
+def generate_prompt(data):
+    if data["input"]:
+        context = "Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request."
+    else:
+        context = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
+
+    prompt = [
+        context,
+        "###Instruction:\n" + data["instruction"],
+    ]
+
+    if data["input"]:
+        prompt.append("###Input:\n" + data["input"])
+
+    prompt.append("###Response:\n" + data["output"])
+
+    return "\n\n".join(prompt)
+
+def tokenize_prompt(data):
+    # Prompt without expected response
+    user_prompt = generate_prompt({**data, "output": ""})
+    full_prompt = generate_prompt(data) + tokenizer.eos_token
+
+    tokenized_user_prompt = tokenizer(user_prompt, padding=False)
+    tokenized = tokenizer(full_prompt, padding=False)
+
+    user_prompt_len = len(tokenized_user_prompt["input_ids"])
+    labels = tokenized["input_ids"].copy()
+
+    labels = [-100] * user_prompt_len + labels[user_prompt_len:]
+    tokenized["labels"] = labels
+    return tokenized
+
+# --------------------------------------------------------------------------
+# Setup
+# --------------------------------------------------------------------------
+
+data = load_dataset("json", data_files=dataset_path)
+print(data)
+if sample_size is not None:
+    data["train"] = data["train"].shuffle(seed=42).select(range(sample_size))
+
+data_split = data["train"].train_test_split(test_size=val_set_size, shuffle=True, seed=42)
+
+data_train = data_split["train"].shuffle().map(tokenize_prompt)
+data_val = data_split["test"].shuffle().map(tokenize_prompt)
+
+# --------------------------------------------------------------------------
+# Trainer
+# --------------------------------------------------------------------------
+trainer = transformers.Trainer(
+    model=model,
+    train_dataset=data_train,
+    eval_dataset=data_val,
+    args=transformers.TrainingArguments(
+        output_dir=output_dir,
+        gradient_accumulation_steps=gradient_accumulation_steps,
+        num_train_epochs=num_epochs,
+        learning_rate=learning_rate,
+
+        eval_strategy="steps",
+        eval_steps=eval_steps,
+        save_strategy="steps",
+        save_steps=save_steps,
+
+        bf16=True,
+        save_total_limit=3,
+        gradient_checkpointing=True,
+        # train_sampling_strategy="group_by_length",
+
+
+        # Taken from reference
+        optim="adamw_torch",
+        warmup_steps=100,
+    ),
+    data_collator=transformers.DataCollatorForSeq2Seq(
+        tokenizer,
+        pad_to_multiple_of=8
+    )
+)
+
+trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+trainer.save_model(output_dir)
