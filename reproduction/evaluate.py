@@ -15,11 +15,13 @@ batch_size = 10
 num_beams = 4
 outfile = "./eval_results.json"
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def main():
     # --------------------------------------------------------------------------
     # Load datasets and model
     # --------------------------------------------------------------------------
-    dataset_path = f"./datasets/dataset/{dataset}/test.json"
+    dataset_path = os.path.join(SCRIPT_DIR, "../datasets/dataset", dataset, "test.json")
     if not os.path.exists(dataset_path):
         raise FileNotFoundError(f"Couldn't find dataset file: {dataset_path}")
     data = json.load(open(dataset_path, "r"))
@@ -45,7 +47,7 @@ def main():
     for i, batch in enumerate(data_batches):
         batch_result = eval_batch(batch, tokenizer, model)
         eval_result.extend(batch_result)
-        print_result("Batch {i + 1}", batch_result)
+        print_result(f"Batch {i + 1}", batch_result)
 
         # A bit inefficient, but we just overwrite the latest results
         with open(outfile, "w", encoding="utf-8") as f:
@@ -63,6 +65,7 @@ def eval_batch(batch, tokenizer, model):
         gen_outputs = model.generate(
             **inputs,
             max_new_tokens=32,
+            max_length=None,
             num_beams=num_beams,
             return_dict_in_generate=True,
             output_scores=True,
@@ -73,7 +76,7 @@ def eval_batch(batch, tokenizer, model):
 
     batch_result = []
     for model_output, batch_item in zip(outputs, batch):
-        prediction = extract_answer(model_output)
+        prediction = extract_answer(dataset, model_output)
         reference = batch_item["answer"]
 
         result = {
@@ -92,11 +95,26 @@ def print_result(prefix: str, results):
     accuracy = score / total
     print(f"{prefix}: {score}/{total} ({accuracy:.2%})")
 
-def extract_answer(model_output):
+def extract_answer(dataset: str, model_output: str):
     """
-    Only works for boolq for now
+    Referenced commonsense_evaluate.py, untested
     """
-    predicted_answer = re.findall(r"true|false", model_output.strip().lower())
+    sanitized_output = model_output.strip().lower()
+
+    answer1_5 = r"answer1|answer2|answer3|answer4|answer5"
+    DATASET_REGEX = {
+        "boolq": r"true|false",
+        "piqa": r"solution1|solution2",
+        "social_i_qa": answer1_5,
+        "ARC-Challenge": answer1_5,
+        "ARC-Easy": answer1_5,
+        "openbookqa": answer1_5,
+        "hellaswag": r"ending1|ending2|ending3|ending4",
+        "winogrande": r"option1|option2",
+    }
+
+    reg = DATASET_REGEX.get(dataset)
+    predicted_answer = re.findall(reg, sanitized_output)
     if not predicted_answer:
         return None
     return predicted_answer[0]
