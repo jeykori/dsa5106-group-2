@@ -1,27 +1,27 @@
-from peft import LoraConfig, config, get_peft_model
+import fire
+from peft import LoraConfig, get_peft_model
 import transformers
 from datasets import load_dataset
 
 from utils import generate_prompt
 
-lora_r = 16
-lora_alpha = 32
-batch_size = 16
-micro_batch_size = 12
-num_epochs = 3
-learning_rate = 2e-4
-output_dir = "./lora-finetuned"
-eval_steps = 80
-save_steps = 80
-model_name = "unsloth/llama-3.2-3b"
-dataset_path = "./datasets/commonsense_170k.json"
-sample_size = 10000
-val_set_size = 120
-resume_from_checkpoint = None
-
-gradient_accumulation_steps = batch_size // micro_batch_size
-
-def main():
+def main(
+        lora_r=16,
+        lora_alpha=32,
+        batch_size=16,
+        micro_batch_size=12,
+        num_epochs=3,
+        learning_rate=2e-4,
+        output_dir="./lora-finetuned",
+        eval_steps=80,
+        save_steps=80,
+        model_name="unsloth/llama-3.2-3b",
+        dataset_path="./datasets/commonsense_170k.json",
+        sample_size=10000,
+        val_set_size=120,
+        resume_from_checkpoint=None,
+):
+    gradient_accumulation_steps = batch_size // micro_batch_size
     # --------------------------------------------------------------------------
     # LoRA
     # --------------------------------------------------------------------------
@@ -112,4 +112,4 @@ def tokenize_prompt(data, tokenizer):
     return tokenized
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(main)

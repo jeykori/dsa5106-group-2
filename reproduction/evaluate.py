@@ -2,22 +2,22 @@ import json
 import os
 import re
 
+import fire
 import torch
 import transformers
 
 from utils import generate_prompt
 
-# model_path = "./lora-finetuned"
-model_path = "unsloth/llama-3.2-3b"
-model_name = "unsloth/llama-3.2-3b"
-dataset = "boolq"
-batch_size = 10
-num_beams = 4
-outfile = "./eval_results.json"
-
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def main():
+def main(
+        model_path="unsloth/llama-3.2-3b",
+        model_name="unsloth/llama-3.2-3b",
+        dataset="boolq",
+        batch_size=10,
+        num_beams=4,
+        outfile="./eval_results.json",
+):
     # --------------------------------------------------------------------------
     # Load datasets and model
     # --------------------------------------------------------------------------
@@ -45,7 +45,7 @@ def main():
 
     eval_result = []
     for i, batch in enumerate(data_batches):
-        batch_result = eval_batch(batch, tokenizer, model)
+        batch_result = eval_batch(batch, tokenizer, model, num_beams)
         eval_result.extend(batch_result)
         print_result(f"Batch {i + 1}", batch_result)
 
@@ -55,7 +55,7 @@ def main():
 
     print_result("Overall score", eval_result)
 
-def eval_batch(batch, tokenizer, model):
+def eval_batch(batch, tokenizer, model, num_beams: int):
     prompts = [generate_prompt({**item, "output": ""}) for item in batch]
 
     inputs = tokenizer(prompts, return_tensors="pt", padding=True).to(model.device)
@@ -120,4 +120,4 @@ def extract_answer(dataset: str, model_output: str):
     return predicted_answer[0]
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(main)
