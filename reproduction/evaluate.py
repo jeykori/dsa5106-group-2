@@ -5,6 +5,8 @@ import re
 import torch
 import transformers
 
+from utils import generate_prompt
+
 # model_path = "./lora-finetuned"
 model_path = "unsloth/llama-3.2-3b"
 model_name = "unsloth/llama-3.2-3b"
@@ -50,24 +52,6 @@ def main():
             json.dump(eval_result, f, indent=4)
 
     print_result("Overall score", eval_result)
-
-def generate_prompt(data):
-    if data["input"]:
-        context = "Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request."
-    else:
-        context = "Below is an instruction that describes a task. Write a response that appropriately completes the request."
-
-    prompt = [
-        context,
-        "###Instruction:\n" + data["instruction"],
-    ]
-
-    if data["input"]:
-        prompt.append("###Input:\n" + data["input"])
-
-    prompt.append("###Response:\n" + data["output"])
-
-    return "\n\n".join(prompt)
 
 def eval_batch(batch, tokenizer, model):
     prompts = [generate_prompt({**item, "output": ""}) for item in batch]
