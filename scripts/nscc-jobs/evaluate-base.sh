@@ -34,7 +34,6 @@ datasets=(
 for ds in "${datasets[@]}"; do
     echo "Evaluating dataset: $ds"
     uv run reproduction/evaluate.py \
-      --model_path "$MODEL_PATH" \
       --dataset $ds \
       --outfile "$OUT_DIR/${ds}_results.json" \
       --batch_size 16
