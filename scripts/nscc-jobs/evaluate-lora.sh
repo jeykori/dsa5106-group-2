@@ -6,7 +6,7 @@
 #PBS -l select=1:ngpus=1
 #PBS -l walltime=1:00:00
 #PBS -j oe
-#PBS -o out-run.txt
+#PBS -o eval-lora.txt
 
 # Set caches to scratch dir
 export HF_HOME=~/scratch/.cache/huggingface

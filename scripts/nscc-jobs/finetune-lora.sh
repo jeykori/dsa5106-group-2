@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #PBS -P personal
-#PBS -N LoRA_LLaMA_3.2_3B
+#PBS -N finetune_LoRA_LLaMA_3.2_3B
 #PBS -q normal
 #PBS -l select=1:ngpus=1
 #PBS -l walltime=1:00:00
 #PBS -j oe
-#PBS -o out-run.txt
+#PBS -o finetune-lora.txt
 
 # Set caches to scratch dir
 export HF_HOME=~/scratch/.cache/huggingface

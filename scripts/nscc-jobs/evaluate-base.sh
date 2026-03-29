@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #PBS -P personal
-#PBS -N eval_LoRA_LLaMA_3.2_3B
+#PBS -N eval_LLaMA_3.2_3B
 #PBS -q normal
 #PBS -l select=1:ngpus=1
 #PBS -l walltime=1:00:00
 #PBS -j oe
-#PBS -o out-run.txt
+#PBS -o eval-base.txt
 
 # Set caches to scratch dir
 export HF_HOME=~/scratch/.cache/huggingface
