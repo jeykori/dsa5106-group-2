@@ -17,8 +17,7 @@ module load PrgEnv-gnu/8.3.3
 
 cd ~/scratch/dsa5106-project
 
-MODEL_PATH="$HOME/scratch/lora-finetuned"
-OUT_DIR="$HOME/scratch/eval_results/lora"
+OUT_DIR="$HOME/scratch/eval_results/base"
 
 datasets=(
   "boolq"

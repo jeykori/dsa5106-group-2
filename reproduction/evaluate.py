@@ -26,6 +26,8 @@ def main(
         raise FileNotFoundError(f"Couldn't find dataset file: {dataset_path}")
     data = json.load(open(dataset_path, "r"))
 
+    os.makedirs(os.path.dirname(outfile), exist_ok=True)
+
     data_batches = []
 
     for i in range(0, len(data), batch_size):
