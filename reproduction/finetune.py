@@ -1,9 +1,9 @@
 import fire
-from peft import LoraConfig, get_peft_model
 import torch
 import transformers
 from datasets import load_dataset
 
+from lora import inject_lora
 from utils import generate_prompt
 
 def main(
@@ -21,24 +21,23 @@ def main(
         sample_size=10000,
         val_set_size=120,
         resume_from_checkpoint=None,
+        target_modules=["q_proj", "v_proj"],
 ):
     gradient_accumulation_steps = batch_size // micro_batch_size
-    # --------------------------------------------------------------------------
-    # LoRA
-    # --------------------------------------------------------------------------
+
     model = transformers.AutoModelForCausalLM.from_pretrained(
         model_name,
         device_map="auto",
         dtype=torch.bfloat16
     )
-    config = LoraConfig(
+
+    # LoRA
+    model = inject_lora(
+        model=model,
         r=lora_r,
         lora_alpha=lora_alpha,
-        target_modules=["q_proj", "v_proj"],
-        task_type="CAUSAL_LM"
+        target_modules=target_modules,
     )
-
-    model = get_peft_model(model, config)
 
     # --------------------------------------------------------------------------
     # Tokenizer
