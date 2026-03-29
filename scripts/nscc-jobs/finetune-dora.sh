@@ -1,12 +1,12 @@
 #!/bin/bash
 
 #PBS -P personal
-#PBS -N finetune_LoRA_LLaMA_3.2_3B
+#PBS -N finetune_DoRA_LLaMA_3.2_3B
 #PBS -q normal
 #PBS -l select=1:ngpus=1
-#PBS -l walltime=1:00:00
+#PBS -l walltime=2:00:00
 #PBS -j oe
-#PBS -o finetune-lora.txt
+#PBS -o finetune-dora.txt
 
 # Set caches to scratch dir
 export HF_HOME=~/scratch/.cache/huggingface
@@ -18,5 +18,6 @@ module load PrgEnv-gnu/8.3.3
 cd ~/scratch/dsa5106-project
 
 uv run reproduction/finetune.py \
-  --adapter "lora" \
-  --output_dir "./lora-finetuned"
+  --adapter "dora" \
+  --output_dir "./dora-finetuned" \
+  --micro_batch_size 4

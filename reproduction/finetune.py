@@ -4,6 +4,7 @@ import transformers
 from datasets import load_dataset
 
 from lora import inject_lora
+from dora import inject_dora
 from utils import generate_prompt
 
 def main(
@@ -22,6 +23,7 @@ def main(
         val_set_size=120,
         resume_from_checkpoint=None,
         target_modules=["q_proj", "v_proj"],
+        adapter="dora"
 ):
     gradient_accumulation_steps = batch_size // micro_batch_size
 
@@ -31,13 +33,22 @@ def main(
         dtype=torch.bfloat16
     )
 
-    # LoRA
-    model = inject_lora(
-        model=model,
-        r=lora_r,
-        lora_alpha=lora_alpha,
-        target_modules=target_modules,
-    )
+    match adapter:
+        case "lora":
+            model = inject_lora(
+                model=model,
+                r=lora_r,
+                lora_alpha=lora_alpha,
+                target_modules=target_modules,
+            )
+        case "dora":
+            model = inject_dora(
+                model=model,
+                r=lora_r,
+                lora_alpha=lora_alpha,
+                target_modules=target_modules,
+            )
+
 
     # --------------------------------------------------------------------------
     # Tokenizer
