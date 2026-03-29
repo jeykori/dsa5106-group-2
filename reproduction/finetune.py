@@ -1,5 +1,6 @@
 import fire
 from peft import LoraConfig, get_peft_model
+import torch
 import transformers
 from datasets import load_dataset
 
@@ -25,8 +26,11 @@ def main(
     # --------------------------------------------------------------------------
     # LoRA
     # --------------------------------------------------------------------------
-    model = transformers.AutoModelForCausalLM.from_pretrained(model_name, device_map="auto")
-
+    model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_name,
+        device_map="auto",
+        dtype=torch.bfloat16
+    )
     config = LoraConfig(
         r=lora_r,
         lora_alpha=lora_alpha,

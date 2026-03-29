@@ -34,7 +34,11 @@ def main(
         batch = data[i : i + batch_size]
         data_batches.append(batch)
 
-    model = transformers.AutoModelForCausalLM.from_pretrained(model_path, device_map="auto")
+    model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_path,
+        device_map="auto",
+        dtype=torch.bfloat16
+    )
     model.eval()
 
     # --------------------------------------------------------------------------
