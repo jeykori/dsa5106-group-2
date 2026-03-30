@@ -105,6 +105,13 @@ def main(
         )
     )
 
+    trainable, total = 0, 0
+    for param in model.parameters():
+        total += param.numel()
+        if param.requires_grad:
+            trainable += param.numel()
+    print(f"Trainable: {trainable} | Total: {total} | %: {100 * trainable / total:.4f}")
+
     trainer.train(resume_from_checkpoint=resume_from_checkpoint)
 
     if adapter == "dora":
