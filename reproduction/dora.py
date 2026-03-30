@@ -33,26 +33,22 @@ class DoraLayer(torch.nn.Module):
 
     def forward(self, x):
         previous_dtype = self.base_layer.weight.dtype
-        # delta_V = B @ A * scaling
-        # delta_v = (self.lora_B.weight @ self.lora_A.weight) * self.scaling
-        # v_new = self.base_layer.weight + delta_v
 
         with torch.no_grad():
-            # Compute ΔV = B @ A and V_new = V + ΔV ephemerally
-            delta_v_init = (self.lora_B.weight @ self.lora_A.weight) * self.scaling
-            v_new = self.base_layer.weight + delta_v_init
-            v_norm = torch.linalg.norm(v_new, dim=1, keepdim=True)
+            # delta_V = B @ A * scaling
+            delta_v = (self.lora_B.weight @ self.lora_A.weight) * self.scaling
+            v_new = self.base_layer.weight + delta_v
 
         # From reference code: they don't calculate the full m * (V_new / ||V_new||), because this generates a new full tensor in memory
         # norm_scale = m / ||V_new|| (shape: [out_features, 1])
         # detach(): this is the "Reduction of Training Overhead" logic from the paper
-        norm_scale = self.m / v_norm
+        norm_scale = self.m / torch.linalg.norm(v_new, dim=1, keepdim=True).detach()
 
         # y = norm_scale * (V @ x + delta_v @ x)
         base_output = self.base_layer(x) # V @ x
         lora_output = self.lora_B(self.lora_A(x)) * self.scaling  # delta_v @ x
 
-        result = norm_scale.view(1, -1) * (base_output + lora_output)
+        result = norm_scale.view(1, 1, -1) * (base_output + lora_output)
 
         if result.dtype != previous_dtype:
             result = result.to(previous_dtype)

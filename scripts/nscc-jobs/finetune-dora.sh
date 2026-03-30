@@ -19,5 +19,4 @@ cd ~/scratch/dsa5106-project
 
 uv run reproduction/finetune.py \
   --adapter "dora" \
-  --output_dir "./dora-finetuned" \
-  --micro_batch_size 4
+  --output_dir "./dora-finetuned"

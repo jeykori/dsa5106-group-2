@@ -14,7 +14,7 @@ def main(
         micro_batch_size=12,
         num_epochs=3,
         learning_rate=2e-4,
-        output_dir="./lora-finetuned",
+        output_dir="./dora-finetuned",
         eval_steps=80,
         save_steps=80,
         model_name="unsloth/llama-3.2-3b",
@@ -62,7 +62,6 @@ def main(
     # --------------------------------------------------------------------------
 
     data = load_dataset("json", data_files=dataset_path)
-    print(data)
     if sample_size is not None:
         data["train"] = data["train"].shuffle(seed=42).select(range(sample_size))
 
@@ -89,6 +88,7 @@ def main(
             save_strategy="steps",
             save_steps=save_steps,
 
+            per_device_train_batch_size=micro_batch_size,
             bf16=True,
             save_total_limit=3,
             gradient_checkpointing=True,
