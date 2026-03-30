@@ -4,7 +4,7 @@ import transformers
 from datasets import load_dataset
 
 from lora import inject_lora
-from dora import inject_dora
+from dora import inject_dora, merge_and_unload_dora
 from utils import generate_prompt
 
 def main(
@@ -106,6 +106,10 @@ def main(
     )
 
     trainer.train(resume_from_checkpoint=resume_from_checkpoint)
+
+    if adapter == "dora":
+        merge_and_unload_dora(model)
+
     trainer.save_model(output_dir)
 
 

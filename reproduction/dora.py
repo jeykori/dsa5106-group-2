@@ -50,6 +50,9 @@ class DoraLayer(torch.nn.Module):
 
         result = norm_scale.view(1, 1, -1) * (base_output + lora_output)
 
+        if self.base_layer.bias is not None:
+            result += self.base_layer.bias
+
         if result.dtype != previous_dtype:
             result = result.to(previous_dtype)
         return result
@@ -75,5 +78,47 @@ def inject_dora(model: PreTrainedModel, r: int, lora_alpha: int, target_modules:
                 )
 
                 setattr(parent, layer_name, dora_layer)
+
+    return model
+
+@torch.no_grad()
+def merge_and_unload_dora(model: torch.nn.Module):
+    module_names = list(model.named_modules())
+
+    for name, module in module_names:
+        if isinstance(module, DoraLayer):
+            # Calculate merged weights
+            base = module.base_layer
+            lora_A = module.lora_A.weight
+            lora_B = module.lora_B.weight
+            m = module.m
+            scaling = module.scaling
+
+            delta_v = (lora_B @ lora_A) * scaling
+            v_new = base.weight + delta_v
+
+            v_norm = torch.linalg.norm(v_new, dim=1, keepdim=True)
+
+            w_merged = m * (v_new / v_norm)
+
+            # Create new layer
+            new_linear = torch.nn.Linear(
+                base.in_features,
+                base.out_features,
+                bias=(base.bias is not None)
+            )
+
+            new_linear.weight.copy_(w_merged.to(base.weight.dtype))
+            if base.bias is not None:
+                new_linear.bias.copy_(base.bias)
+
+            new_linear.to(device=base.weight.device, dtype=base.weight.dtype)
+
+            # Replace with new layer
+            parent_name, _, layer_name = name.rpartition(".")
+            parent = model.get_submodule(parent_name)
+            setattr(parent, layer_name, new_linear)
+
+            print(f"Merged and unloaded DoRA for module: {name}")
 
     return model
