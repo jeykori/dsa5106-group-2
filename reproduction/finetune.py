@@ -10,6 +10,7 @@ from utils import generate_prompt
 def main(
         lora_r=16,
         lora_alpha=32,
+        lora_dropout=0.05,
         batch_size=16,
         micro_batch_size=12,
         num_epochs=3,
@@ -22,7 +23,7 @@ def main(
         sample_size=10000,
         val_set_size=120,
         resume_from_checkpoint=None,
-        target_modules=["q_proj", "v_proj"],
+        target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"],
         adapter="dora"
 ):
     gradient_accumulation_steps = batch_size // micro_batch_size
@@ -39,6 +40,7 @@ def main(
                 model=model,
                 r=lora_r,
                 lora_alpha=lora_alpha,
+                lora_dropout=lora_dropout,
                 target_modules=target_modules,
             )
         case "dora":
@@ -46,6 +48,7 @@ def main(
                 model=model,
                 r=lora_r,
                 lora_alpha=lora_alpha,
+                lora_dropout=lora_dropout,
                 target_modules=target_modules,
             )
 

@@ -10,6 +10,7 @@ class DoraLayer(torch.nn.Module):
             base_layer: torch.nn.Linear,
             r: int = 16,
             lora_alpha: int = 32,
+            lora_dropout: float = 0.0,
         ):
         super().__init__()
         self.base_layer = base_layer
@@ -20,6 +21,11 @@ class DoraLayer(torch.nn.Module):
         self.lora_A = torch.nn.Linear(in_features, r, bias=False)
         self.lora_B = torch.nn.Linear(r, out_features, bias=False)
         self.scaling = lora_alpha / r
+
+        if lora_dropout > 0.0:
+            self.lora_dropout = torch.nn.Dropout(p=lora_dropout)
+        else:
+            self.lora_dropout = torch.nn.Identity()
 
         # Init LoRA weights
         torch.nn.init.kaiming_uniform_(self.lora_A.weight, a=math.sqrt(5))
@@ -42,11 +48,15 @@ class DoraLayer(torch.nn.Module):
         # detach(): this is the "Reduction of Training Overhead" logic from the paper
         norm_scale = self.m / torch.linalg.norm(v_new, dim=1, keepdim=True).detach()
 
+        norm_scale_view = norm_scale.view(1, 1, -1)
+        dropout_x = self.lora_dropout(x)
+
         # y = norm_scale * (V @ x + delta_v @ x)
         base_output = torch.nn.functional.linear(x, self.base_layer.weight) # V @ x
-        lora_output = self.lora_B(self.lora_A(x)) * self.scaling  # delta_v @ x
+        base_output_dropout = torch.nn.functional.linear(dropout_x, self.base_layer.weight) # V @ dropout(x)
+        lora_output = self.lora_B(self.lora_A(dropout_x)) * self.scaling  # delta_v @ dropout(x)
 
-        result = norm_scale.view(1, 1, -1) * (base_output + lora_output)
+        result = base_output + (norm_scale_view - 1) * base_output_dropout + norm_scale_view * lora_output
 
         if self.base_layer.bias is not None:
             result += self.base_layer.bias
@@ -55,7 +65,13 @@ class DoraLayer(torch.nn.Module):
             result = result.to(previous_dtype)
         return result
 
-def inject_dora(model: PreTrainedModel, r: int, lora_alpha: int, target_modules: list[str]):
+def inject_dora(
+        model: PreTrainedModel,
+        r: int,
+        lora_alpha: int,
+        lora_dropout: float,
+        target_modules: list[str]
+    ):
     print(f"Injecting DoRA into pre-trained model")
 
     # Freeze all original weights
@@ -77,7 +93,8 @@ def inject_dora(model: PreTrainedModel, r: int, lora_alpha: int, target_modules:
                 dora_layer = DoraLayer(
                     base_layer=module,
                     r=r,
-                    lora_alpha=lora_alpha
+                    lora_alpha=lora_alpha,
+                    lora_dropout=lora_dropout,
                 )
 
                 setattr(parent, layer_name, dora_layer)

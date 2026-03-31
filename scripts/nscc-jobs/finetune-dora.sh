@@ -19,4 +19,5 @@ cd ~/scratch/dsa5106-project
 
 uv run reproduction/finetune.py \
   --adapter "dora" \
-  --output_dir "./dora-finetuned"
+  --output_dir "$HOME/scratch/dora-finetuned" \
+  --learning_rate "2e-4"

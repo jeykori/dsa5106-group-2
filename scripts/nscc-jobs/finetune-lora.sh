@@ -19,4 +19,5 @@ cd ~/scratch/dsa5106-project
 
 uv run reproduction/finetune.py \
   --adapter "lora" \
-  --output_dir "./lora-finetuned"
+  --output_dir "$HOME/scratch/lora-finetuned" \
+  --learning_rate "3e-4"
