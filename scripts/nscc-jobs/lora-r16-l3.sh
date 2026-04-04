@@ -25,7 +25,7 @@ cd ~/scratch/dsa5106-project
 # Params
 LORA_R=16
 LORA_ALPHA=32
-LEARNING_RATE="1e-4"
+LEARNING_RATE="3e-4"
 NAME="LoRA-r16-l3"
 OUT_DIR="$HOME/scratch/lora-r16-l3"
 
