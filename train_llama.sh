@@ -11,7 +11,7 @@ cd $PBS_O_WORKDIR
 source .venv/bin/activate
 
 # Run the training pointing to your LOCAL model folder
-python reproduction/finetune.py \
+python -m reproduction.finetune \
   --model_name_or_path /home/users/nus/e0538411/scratch/llama-3.2-3b \
   --dataset_path /home/users/nus/e0538411/dsa5106-group-2/reference-code/commonsense_reasoning/commonsense_170k.json \
   --adapter "dora" \

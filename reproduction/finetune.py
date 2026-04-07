@@ -3,9 +3,9 @@ import torch
 import transformers
 from datasets import load_dataset
 
-from lora import inject_lora
-from dora import inject_dora, merge_and_unload_dora
-from utils import generate_prompt
+from reproduction.lora import inject_lora
+from reproduction.dora import inject_dora, merge_and_unload_dora
+from reproduction.utils import generate_prompt
 
 def main(
         lora_r=16,

@@ -35,13 +35,13 @@ EVAL_DIR="$OUT_DIR/eval_results"
 
 mkdir -p "$OUT_DIR"
 
-# uv run reproduction/finetune.py \
-#   --adapter "dora" \
-#   --output_dir "$MODEL_PATH" \
-#   --lora_r $LORA_R --lora_alpha $LORA_ALPHA \
-#   --learning_rate $LEARNING_RATE \
-#   --model_name $MODEL_NAME \
-#   --sample_size 80000
+uv run -m reproduction.finetune \
+  --adapter "dora" \
+  --output_dir "$MODEL_PATH" \
+  --lora_r $LORA_R --lora_alpha $LORA_ALPHA \
+  --learning_rate $LEARNING_RATE \
+  --model_name $MODEL_NAME \
+  --sample_size 80000
 
 datasets=(
   "boolq"
@@ -57,7 +57,7 @@ datasets=(
 # Loop through each dataset
 for ds in "${datasets[@]}"; do
     echo "Evaluating dataset: $ds"
-    uv run reproduction/evaluate.py \
+    uv run -m reproduction.evaluate \
       --model_path "$MODEL_PATH" \
       --dataset $ds \
       --outfile "$EVAL_DIR/${ds}_results.json" \

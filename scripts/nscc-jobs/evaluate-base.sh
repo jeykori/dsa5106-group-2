@@ -33,7 +33,7 @@ datasets=(
 # Loop through each dataset
 for ds in "${datasets[@]}"; do
     echo "Evaluating dataset: $ds"
-    uv run reproduction/evaluate.py \
+    uv run -m reproduction.evaluate \
       --dataset $ds \
       --outfile "$OUT_DIR/${ds}_results.json" \
       --batch_size 16
