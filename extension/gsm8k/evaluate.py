@@ -5,15 +5,19 @@ import re
 import fire
 import torch
 import transformers
+from datasets import load_dataset
 
-from reproduction.utils import generate_prompt
+from extension.gsm8k.utils import generate_prompt_gsm8k
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-
+# Mainly a copy of reproduction/evaluate.py
+# Differences:
+# - Load gs8k dataset
+# - use generate_prompt_gsm8k
+# - max_new_tokens increased
+# - extract_answer adapted to gsm8k answer format
 def main(
         model_path="unsloth/llama-3.2-3b",
         model_name="unsloth/llama-3.2-3b",
-        dataset="boolq",
         batch_size=10,
         num_beams=4,
         outfile="./eval_results.json",
@@ -21,17 +25,15 @@ def main(
     # --------------------------------------------------------------------------
     # Load datasets and model
     # --------------------------------------------------------------------------
-    dataset_path = os.path.join(SCRIPT_DIR, "../datasets/dataset", dataset, "test.json")
-    if not os.path.exists(dataset_path):
-        raise FileNotFoundError(f"Couldn't find dataset file: {dataset_path}")
-    data = json.load(open(dataset_path, "r"))
+    dataset = load_dataset("openai/gsm8k", "main")
+    data = dataset["test"]
 
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
 
     data_batches = []
 
     for i in range(0, len(data), batch_size):
-        batch = data[i : i + batch_size]
+        batch = [data[j] for j in range(i, min(i + batch_size, len(data)))]
         data_batches.append(batch)
 
     model = transformers.AutoModelForCausalLM.from_pretrained(
@@ -51,7 +53,7 @@ def main(
 
     eval_result = []
     for i, batch in enumerate(data_batches):
-        batch_result = eval_batch(batch, tokenizer, model, num_beams, dataset)
+        batch_result = eval_batch(batch, tokenizer, model, num_beams)
         eval_result.extend(batch_result)
         print_result(f"Batch {i + 1}", batch_result)
 
@@ -61,8 +63,8 @@ def main(
 
     print_result("Overall score", eval_result)
 
-def eval_batch(batch, tokenizer, model, num_beams: int, dataset: str):
-    prompts = [generate_prompt({**item, "output": ""}) for item in batch]
+def eval_batch(batch, tokenizer, model, num_beams: int):
+    prompts = [generate_prompt_gsm8k({**item, "answer": ""}) for item in batch]
 
     inputs = tokenizer(prompts, return_tensors="pt", padding=True).to(model.device)
     input_length = inputs.input_ids.shape[1] # All padded, so same length
@@ -70,7 +72,7 @@ def eval_batch(batch, tokenizer, model, num_beams: int, dataset: str):
     with torch.no_grad():
         gen_outputs = model.generate(
             **inputs,
-            max_new_tokens=32,
+            max_new_tokens=512,
             max_length=None,
             num_beams=num_beams,
             return_dict_in_generate=True,
@@ -82,14 +84,12 @@ def eval_batch(batch, tokenizer, model, num_beams: int, dataset: str):
 
     batch_result = []
     for model_output, batch_item in zip(outputs, batch):
-        prediction = extract_answer(dataset, model_output)
-        reference = batch_item["answer"]
+        passed = check_answer(batch_item["answer"], model_output)
 
         result = {
             **batch_item,
             "model_output": model_output,
-            "prediction": prediction,
-            "passed": prediction == reference,
+            "passed": passed,
         }
         batch_result.append(result)
 
@@ -101,29 +101,23 @@ def print_result(prefix: str, results):
     accuracy = score / total
     print(f"{prefix}: {score}/{total} ({accuracy:.2%})")
 
-def extract_answer(dataset: str, model_output: str):
-    """
-    Referenced commonsense_evaluate.py, untested
-    """
-    sanitized_output = model_output.strip().lower()
+def check_answer(reference: str, model_output: str):
+    if "####" not in model_output:
+        return False
 
-    answer1_5 = r"answer1|answer2|answer3|answer4|answer5"
-    DATASET_REGEX = {
-        "boolq": r"true|false",
-        "piqa": r"solution1|solution2",
-        "social_i_qa": answer1_5,
-        "ARC-Challenge": answer1_5,
-        "ARC-Easy": answer1_5,
-        "openbookqa": answer1_5,
-        "hellaswag": r"ending1|ending2|ending3|ending4",
-        "winogrande": r"option1|option2",
-    }
+    # Extract the number immediately following ####
+    # .replace(",", "") handles numbers like 1,000
+    ref_val = reference.split("####")[-1].strip().replace(",", "")
+    pred_val = model_output.split("####")[-1].strip().replace(",", "")
 
-    reg = DATASET_REGEX.get(dataset)
-    predicted_answer = re.findall(reg, sanitized_output)
-    if not predicted_answer:
-        return None
-    return predicted_answer[0]
+    # Clean up any trailing punctuation or extra text
+    ref_val = re.search(r"(-?[\d.]+)", ref_val).group(1)
+    pred_match = re.search(r"(-?[\d.]+)", pred_val)
+
+    if not pred_match:
+        return False
+
+    return ref_val == pred_match.group(1)
 
 if __name__ == "__main__":
     fire.Fire(main)

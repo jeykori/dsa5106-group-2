@@ -1,7 +1,7 @@
 import fire
 import torch
 import transformers
-from datasets import load_dataset
+from datasets import DatasetDict, load_dataset
 
 from reproduction.lora import inject_lora
 from reproduction.dora import inject_dora, merge_and_unload_dora
@@ -24,7 +24,12 @@ def main(
         val_set_size=120,
         resume_from_checkpoint=None,
         target_modules=["q_proj", "k_proj", "v_proj", "up_proj", "down_proj"],
-        adapter="dora"
+        adapter="dora",
+
+        # Used by extension
+        dataset: DatasetDict = None,
+        prompt_generator=generate_prompt,
+        response_key="output",
 ):
     gradient_accumulation_steps = batch_size // micro_batch_size
 
@@ -63,15 +68,17 @@ def main(
     # --------------------------------------------------------------------------
     # Setup
     # --------------------------------------------------------------------------
-
-    data = load_dataset("json", data_files=dataset_path)
-    if sample_size is not None:
-        data["train"] = data["train"].shuffle(seed=42).select(range(sample_size))
+    if dataset is None:
+        data = load_dataset("json", data_files=dataset_path)
+        if sample_size is not None:
+            data["train"] = data["train"].shuffle(seed=42).select(range(sample_size))
+    else:
+        data = dataset
 
     data_split = data["train"].train_test_split(test_size=val_set_size, shuffle=True, seed=42)
 
-    data_train = data_split["train"].shuffle().map(lambda x: tokenize_prompt(x, tokenizer))
-    data_val = data_split["test"].shuffle().map(lambda x: tokenize_prompt(x, tokenizer))
+    data_train = data_split["train"].shuffle().map(lambda x: tokenize_prompt(x, tokenizer, prompt_generator, response_key))
+    data_val = data_split["test"].shuffle().map(lambda x: tokenize_prompt(x, tokenizer, prompt_generator, response_key))
 
     # --------------------------------------------------------------------------
     # Trainer
@@ -123,11 +130,12 @@ def main(
     trainer.save_model(output_dir)
 
 
-
-def tokenize_prompt(data, tokenizer):
+def tokenize_prompt(data, tokenizer, prompt_generator, response_key):
     # Prompt without expected response
-    user_prompt = generate_prompt({**data, "output": ""})
-    full_prompt = generate_prompt(data) + tokenizer.eos_token
+    user_data = data.copy()
+    user_data[response_key] = ""
+    user_prompt = prompt_generator(user_data)
+    full_prompt = prompt_generator(data) + tokenizer.eos_token
 
     tokenized_user_prompt = tokenizer(user_prompt, padding=False)
     tokenized = tokenizer(full_prompt, padding=False)

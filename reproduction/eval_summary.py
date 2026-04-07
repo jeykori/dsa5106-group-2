@@ -2,17 +2,20 @@ import json
 import os
 import fire
 
-def generate_summary(name, results_dir, outfile):
-    datasets = [
-        "boolq",
-        "piqa",
-        "social_i_qa",
-        "hellaswag",
-        "winogrande",
-        "ARC-Challenge",
-        "ARC-Easy",
-        "openbookqa"
-    ]
+default_datasets = [
+    "boolq",
+    "piqa",
+    "social_i_qa",
+    "hellaswag",
+    "winogrande",
+    "ARC-Challenge",
+    "ARC-Easy",
+    "openbookqa"
+]
+
+def generate_summary(name, results_dir, outfile, datasets=default_datasets):
+    # Tuple if passed in via cli, force convert to list
+    datasets = list(datasets)
 
     results = []
     passed_count = 0
