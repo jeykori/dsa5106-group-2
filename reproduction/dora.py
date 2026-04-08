@@ -70,7 +70,8 @@ def inject_dora(
         r: int,
         lora_alpha: int,
         lora_dropout: float,
-        target_modules: list[str]
+        target_modules: list[str],
+        modules_to_save: list[str] = None
     ):
     print(f"Injecting DoRA into pre-trained model")
 
@@ -78,12 +79,25 @@ def inject_dora(
     for param in model.parameters():
             param.requires_grad = False
 
+    # Unfreeze modules specified in modules_to_save
+    # Needed for "classifier" layer in ViT
+    if modules_to_save is not None:
+        for name, param in model.named_parameters():
+            if any(target in name for target in modules_to_save):
+                param.requires_grad = True
+                print(f"Unfrozen for training: {name}")
+
     module_names = list(model.named_modules())
 
     for name, module in module_names:
         # e.g. "model.layers.0.self_attn.q_proj"
-        leaf_name = name.split(".")[-1]
-        if leaf_name in target_modules or any(target in name for target in target_modules):
+        is_target = any(name.endswith("." + target) for target in target_modules)
+
+        # patch for scenario where target is `output.dense` and we don't want to match `attention.output.dense`
+        if is_target and "attention.output.dense" in name and "attention.output.dense" not in target_modules:
+             is_target = False
+
+        if is_target:
             if isinstance(module, torch.nn.Linear):
                 # e.g "model.layers.0.self_attn", ".", "q_proj"
                 parent_name, _, layer_name = name.rpartition(".")

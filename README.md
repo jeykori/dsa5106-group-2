@@ -150,6 +150,17 @@ Winners (all LLaMA-3.2-1B) - 1/4
 | DoRA-3b-r8-l5-gsm8k | 54.06% | **54.06%** |
 | DoRA-3b-r8-l6-gsm8k | 51.93% | 51.93%     |
 
+## Extension: ViT
+
+| Name                                   | test   | Average |
+| -------------------------------------- | ------ | ------- |
+| LoRA-ViT-p16-224-r16-l2-cifar10        | 5.91%  | 5.91%   |
+| DoRA-ViT-p16-224-r16-l2-cifar10        | 98.81% | 98.81%  |
+| LoRA-ViT-p16-224-r16-l2-eurosat        | 12.00% | 12.00%  |
+| DoRA-ViT-p16-224-r16-l2-eurosat        | 98.89% | 98.89%  |
+| LoRA-ViT-p16-224-r16-l2-oxford_flowers | 0.00%  | 0.00%   |
+| DoRA-ViT-p16-224-r16-l2-oxford_flowers | 51.49% | 51.49%  |
+
 ## How to run reproduction code
 
 1. Run init script
