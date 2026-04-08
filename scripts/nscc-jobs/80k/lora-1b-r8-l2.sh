@@ -28,7 +28,7 @@ LORA_R=8
 LORA_ALPHA=16
 LEARNING_RATE="2e-4"
 NAME="LoRA-1b-r4-l2-80k"
-OUT_DIR="$HOME/scratch/lora-1b-r4-l2-80k"
+OUT_DIR="$HOME/scratch/commonsense_reasoning/80k/lora-1b-r4-l2-80k"
 
 MODEL_PATH="$OUT_DIR/model-finetuned"
 EVAL_DIR="$OUT_DIR/eval_results"

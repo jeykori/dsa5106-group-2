@@ -28,7 +28,7 @@ LORA_R=16
 LORA_ALPHA=32
 LEARNING_RATE="3e-4"
 NAME="DoRA-1b-r16-l3-gsm8k"
-OUT_DIR="$HOME/scratch/dora-1b-r16-l3-gsm8k"
+OUT_DIR="$HOME/scratch/gsm8k/dora-1b-r16-l3-gsm8k"
 
 MODEL_PATH="$OUT_DIR/model-finetuned"
 EVAL_DIR="$OUT_DIR/eval_results"
