@@ -2,6 +2,7 @@ import json
 import os
 
 import fire
+from peft import PeftModel
 import torch
 import transformers
 from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
@@ -30,11 +31,29 @@ def main(
         batch = [data[j] for j in range(i, min(i + batch_size, len(data)))]
         data_batches.append(batch)
 
-    model = transformers.AutoModelForImageClassification.from_pretrained(
-        model_path,
-        device_map="auto",
-        dtype=torch.bfloat16
-    )
+
+
+    # Check if the path contains an adapter or a full model
+    if os.path.exists(os.path.join(model_path, "adapter_config.json")):
+        base_model = transformers.AutoModelForImageClassification.from_pretrained(
+            model_name,
+            device_map="auto",
+            dtype=torch.bfloat16,
+            num_labels=len(labels),
+            id2label=id2label,
+            label2id=label2id,
+        )
+        print(f"Loading adapter from {model_path}")
+        model = PeftModel.from_pretrained(base_model, model_path)
+    else:
+        print(f"Loading full model from {model_path}")
+        # If it's your merged DoRA model, we need to load the weights into the base_model
+        model = transformers.AutoModelForImageClassification.from_pretrained(
+            model_path,
+            device_map="auto",
+            dtype=torch.bfloat16
+        )
+
     model.eval()
 
     # --------------------------------------------------------------------------

@@ -154,11 +154,11 @@ Winners (all LLaMA-3.2-1B) - 1/4
 
 | Name                                   | test   | Average |
 | -------------------------------------- | ------ | ------- |
-| LoRA-ViT-p16-224-r16-l2-cifar10        | 5.91%  | 5.91%   |
+| LoRA-ViT-p16-224-r16-l2-cifar10        | 98.70% | 98.70%  |
 | DoRA-ViT-p16-224-r16-l2-cifar10        | 98.81% | 98.81%  |
-| LoRA-ViT-p16-224-r16-l2-eurosat        | 12.00% | 12.00%  |
+| LoRA-ViT-p16-224-r16-l2-eurosat        | 98.93% | 98.93%  |
 | DoRA-ViT-p16-224-r16-l2-eurosat        | 98.89% | 98.89%  |
-| LoRA-ViT-p16-224-r16-l2-oxford_flowers | 0.00%  | 0.00%   |
+| LoRA-ViT-p16-224-r16-l2-oxford_flowers | 47.76% | 47.76%  |
 | DoRA-ViT-p16-224-r16-l2-oxford_flowers | 51.49% | 51.49%  |
 
 ## How to run reproduction code
