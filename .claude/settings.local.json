@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(du -sh /Users/xinghao/Desktop/projects/nus/github.com/jeykori/dsa5106-group-2/*/)",
+      "Bash(ls -d reproduction/dataset*)",
+      "Bash(uv --version)",
+      "Bash(uv sync:*)",
+      "Bash(python3 -m py_compile reproduction/utils.py)",
+      "Bash(python3 -m py_compile reproduction/lora.py)",
+      "Bash(python3 -m py_compile reproduction/dora.py)",
+      "Bash(python3 -m py_compile reproduction/finetune.py)",
+      "Bash(python3 -m py_compile reproduction/evaluate.py)",
+      "Bash(bash scripts/init-datasets.sh)",
+      "Bash(git sparse-checkout:*)",
+      "Bash(python3:*)"
+    ]
+  }
+}
