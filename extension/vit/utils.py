@@ -2,7 +2,7 @@ from typing import Literal
 
 from datasets import load_dataset
 
-DatasetNames = Literal["cifar10", "eurosat", "oxford_flowers"]
+DatasetNames = Literal["cifar10", "eurosat", "oxford_flowers", "stanford_cars"]
 
 def get_dataset(name: DatasetNames):
     """
@@ -23,6 +23,9 @@ def get_dataset(name: DatasetNames):
         case "oxford_flowers":
             # https://huggingface.co/datasets/dpdl-benchmark/oxford_flowers102
             data = load_dataset("dpdl-benchmark/oxford_flowers102")
+        case "stanford_cars":
+            # https://huggingface.co/datasets/tanganke/stanford_cars
+            data = load_dataset("tanganke/stanford_cars")
 
     # To check the names for `transform_images`
     print(f"Dataset columns: {data['train'].column_names}")
