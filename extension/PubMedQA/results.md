@@ -1,4 +1,13 @@
+# Extension: PubMedQA
+
+[Dataset](https://huggingface.co/datasets/qiaojin/PubMedQA)
+
+## Hyperparameters
+
+same as [reproduction](../../reproduction/results.md#hyperparameters)
+
 ## Llama-3.2-3b:
+
 | Model | Accuracy |
 | ----- | -------- |
 | DoRA-r4-l1 | 74.20% |
