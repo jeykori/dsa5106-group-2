@@ -22,3 +22,20 @@ same as [reproduction](../../reproduction/results.md#hyperparameters)
 | LoRA-r16-l1 | 42.72% |
 | LoRA-r16-l2 | 45.40% |
 | LoRA-r16-l3 | 45.85% |
+
+## Llama-3.2-1b:
+
+| Model | Accuracy |
+| ----- | -------- |
+| DoRA-r4-l1 | 28.95% |
+| DoRA-r4-l2 | 28.62% |
+| DoRA-r4-l3 | 29.60% |
+| DoRA-r16-l1 | 28.81% |
+| DoRA-r16-l2 | 31.27% |
+| DoRA-r16-l3 | 31.96% |
+| LoRA-r4-l1 | 28.64% |
+| LoRA-r4-l2 | 29.81% |
+| LoRA-r4-l3 | 30.17% |
+| LoRA-r16-l1 | 29.19% |
+| LoRA-r16-l2 | 33.61% |
+| LoRA-r16-l3 | 34.50% |
