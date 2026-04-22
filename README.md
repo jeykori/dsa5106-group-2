@@ -4,9 +4,17 @@
 
 Results can be found in their respective folders:
 
-- [Reproduction](./reproduction/results.md)
-- [Extension - GSM8K](./extension/gsm8k/results.md)
-- [Extension - ViT](./extension/vit/results.md)
+### Reproduction
+
+- [Commonsense Reasoning](./reproduction/results.md)
+- [Weight Decomposition Analysis](./reproduction/weight_decomposition_analysis/plot/)
+
+### Extension
+
+- [GSM8K](./extension/gsm8k/results.md)
+- [ViT](./extension/vit/results.md)
+- [PubMedQA](./extension/PubMedQA/results.md)
+- [MedMCQA](./extension/MedMCQA/results.md)
 
 ## How to run code on NSCC
 
