@@ -1,0 +1,6 @@
+datasets>=4.8.4
+fire>=0.7.1
+peft>=0.18.1
+torch==2.6.0
+torchvision>=0.21.0
+transformers>=5.4.0
